@@ -21,9 +21,11 @@ python () {
        configs=get_kernel_config_env(d)
        if configs:
           configs += " " + d.getVar("PN", True)
-          d.setVar('KERNEL_CONF_LIST', configs)
+          kernel_conf_list_pn = 'KERNEL_CONF_LIST_%s' % d.getVar("PN", True)
+          d.setVar(kernel_conf_list_pn, configs)
           bb.warn("%s > KERNEL_CONF_LIST: %s" % (d.getVar("PN", True), configs))
           bb.build.addtask('do_kernel_postconfigure', 'do_compile', 'do_configure', d)
+          d.setVarFlag('do_kernel_postconfigure', 'vardeps' , ' ' + kernel_conf_list_pn)
     if bb.data.inherits_class("module",d) and d.getVar("MULTILIB_VARIANTS", True) != "":
           errorQA = d.getVar("ERROR_QA", True)
           errorList = errorQA.split()
@@ -69,7 +71,6 @@ OE_TERMINAL_EXPORTS += "MVL_SDK_PREFIX PATH"
 
 PRECONFIGURE_IGNORE ?= "KERNEL_CONFIG_BUILD KERNEL_CONFIG_COMMAND"
 PRECONFIGURE_PREFIX ?= "KERNEL_"
-do_kernel_postconfigure[vardeps] += "KERNEL_CONF_LIST"
 do_kernel_postconfigure[doc] = "Adds kernel config values from the environment"
 def get_kernel_config_env(d):
     preconfigure_prefix = d.getVar('PRECONFIGURE_PREFIX',True)
@@ -93,7 +94,8 @@ python do_kernel_postconfigure() {
     def get_kernel_config_vars():
         preconfigure_prefix = d.getVar('PRECONFIGURE_PREFIX', True)
         prefix_len = len(preconfigure_prefix)
-        configs = d.getVar('KERNEL_CONF_LIST', True).split()
+        kernel_conf_list_pn = 'KERNEL_CONF_LIST_%s' % d.getVar("PN", True)
+        configs = d.getVar(kernel_conf_list_pn, True).split()
         bb.warn("< KERNEL_CONF_LIST: %s" % configs)
         new_vars = {}
         for config in configs:
