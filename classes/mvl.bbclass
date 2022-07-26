@@ -20,7 +20,9 @@ python () {
     if bb.data.inherits_class("kernel",d):
        configs=get_kernel_config_env(d)
        if configs:
+          configs += " " + d.getVar("PN", True)
           d.setVar('KERNEL_CONF_LIST', configs)
+          bb.warn("%s > KERNEL_CONF_LIST: %s" % (d.getVar("PN", True), configs))
           bb.build.addtask('do_kernel_postconfigure', 'do_compile', 'do_configure', d)
     if bb.data.inherits_class("module",d) and d.getVar("MULTILIB_VARIANTS", True) != "":
           errorQA = d.getVar("ERROR_QA", True)
@@ -92,13 +94,17 @@ python do_kernel_postconfigure() {
         preconfigure_prefix = d.getVar('PRECONFIGURE_PREFIX', True)
         prefix_len = len(preconfigure_prefix)
         configs = d.getVar('KERNEL_CONF_LIST', True).split()
+        bb.warn("< KERNEL_CONF_LIST: %s" % configs)
         new_vars = {}
         for config in configs:
+            if '=' not in config: continue
             bb.debug(2, 'config: %s' % config)
             config = config.split('=')
             var = config[0][prefix_len:]
             val = config[1]
             new_vars[var] = val
+        if new_vars:
+            bb.warn("get_kernel_config_vars: %s" % new_vars)
         return new_vars
 
     def copy_config(config, new_config, new_vars={}):
