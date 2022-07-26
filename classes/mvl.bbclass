@@ -23,7 +23,7 @@ python () {
           configs += " " + d.getVar("PN", True)
           kernel_conf_list_pn = 'KERNEL_CONF_LIST_%s' % d.getVar("PN", True)
           d.setVar(kernel_conf_list_pn, configs)
-          bb.warn("%s > KERNEL_CONF_LIST: %s" % (d.getVar("PN", True), configs))
+          bb.warn("%s > %s: %s" % (d.getVar("PN", True), kernel_conf_list_pn, configs))
           bb.build.addtask('do_kernel_postconfigure', 'do_compile', 'do_configure', d)
           d.setVarFlag('do_kernel_postconfigure', 'vardeps' , ' ' + kernel_conf_list_pn)
     if bb.data.inherits_class("module",d) and d.getVar("MULTILIB_VARIANTS", True) != "":
@@ -96,7 +96,7 @@ python do_kernel_postconfigure() {
         prefix_len = len(preconfigure_prefix)
         kernel_conf_list_pn = 'KERNEL_CONF_LIST_%s' % d.getVar("PN", True)
         configs = d.getVar(kernel_conf_list_pn, True).split()
-        bb.warn("< KERNEL_CONF_LIST: %s" % configs)
+        bb.warn("< %s: %s" % (kernel_conf_list_pn, configs)
         new_vars = {}
         for config in configs:
             if '=' not in config: continue
